@@ -25,6 +25,9 @@ app.post("/auth/signup", handleUserSignUp);
 // 가게 추가 API
 app.post("/store", addStore);
 
+// 가게 리뷰 조회
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
+
 // 가게에 리뷰 추가 API
 app.post("/store/:storeId/review", addReview);
 

@@ -9,3 +9,8 @@ export const createStore = async (storeData) => {
 export const findStoreById = async (storeId) => {
   return await findStore(storeId);
 };
+
+export const listStoreReviews = async (storeId) => {
+  const reviews = await getAllStoreReviews(storeId);
+  return responseFromReviews(reviews);
+};

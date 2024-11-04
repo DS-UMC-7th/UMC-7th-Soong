@@ -13,15 +13,14 @@ export const bodyToUser = (body) => {
   };
 };
 
-export const responseFromUser = (user) => {
+export const responseFromUser = ({ user, preferences }) => {
+  const preferFoods = preferences.map(
+    (preference) => preference.foodCategory.name
+  );
+
   return {
     email: user.email,
     name: user.name,
-    gender: user.gender,
-    birth: user.birth.toISOString().split('T')[0], // 날짜 형식을 'YYYY-MM-DD'로 변환
-    address: user.address || "",
-    detailAddress: user.detailAddress || "",
-    phoneNumber: user.phoneNumber,
-    preferences: user.preferences || []
+    preferCategory: preferFoods,
   };
 };
