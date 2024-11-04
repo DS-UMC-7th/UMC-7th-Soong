@@ -1,11 +1,29 @@
-const stores = [];
+import { prisma } from "../db.config.js";
 
 export const insertStore = async (storeData) => {
-  const newStore = { id: stores.length + 1, ...storeData };
-  stores.push(newStore);
-  return newStore;
+  try {
+    const newStore = await prisma.store.create({
+      data: {
+        name: storeData.name,
+      },
+    });
+    return newStore;
+  } catch (error) {
+    console.error("Error inserting store:", error);
+    throw error;
+  }
 };
 
 export const findStore = async (storeId) => {
-  return stores.find((store) => store.id === parseInt(storeId));
+  try {
+    const store = await prisma.store.findUnique({
+      where: {
+        id: parseInt(storeId),
+      },
+    });
+    return store;
+  } catch (error) {
+    console.error("Error finding store:", error);
+    throw error;
+  }
 };

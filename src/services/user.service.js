@@ -30,3 +30,16 @@ export const userSignUp = async (data) => {
 
   return responseFromUser({ user, preferences });
 };
+
+export const getMyReviews = async (userId) => {
+  const reviews = await prisma.userStoreReview.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      content: true,
+      store: { select: { id: true, name: true } },
+    },
+    orderBy: { id: "desc" },
+  });
+  return reviews;
+};
