@@ -7,28 +7,9 @@ export class CreateStoreDTO {
 
   static validate(storeData) {
     const { name, location, description } = storeData;
-
-    if (!name || typeof name !== 'string') {
-      throw new Error("Invalid or missing 'name' field");
-    }
-
-    if (!location || typeof location !== 'string') {
-      throw new Error("Invalid or missing 'location' field");
-    }
-
-    if (description && typeof description !== 'string') {
-      throw new Error("Invalid 'description' field");
-    }
-
+    if (!name || typeof name !== 'string') throw new ValidationError("Invalid or missing 'name'");
+    if (!location || typeof location !== 'string') throw new ValidationError("Invalid or missing 'location'");
+    if (description && typeof description !== 'string') throw new ValidationError("Invalid 'description'");
     return new CreateStoreDTO(storeData);
   }
 }
-
-export const responseFromReviews = (reviews) => {
-  return {
-    data: reviews,
-    pagination: {
-      cursor: reviews.length ? reviews[reviews.length - 1].id : null,
-    },
-  };
-};

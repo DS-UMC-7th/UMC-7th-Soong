@@ -7,19 +7,9 @@ export class CreateMissionDTO {
 
   static validate(missionData) {
     const { title, description, reward } = missionData;
-
-    if (!title || typeof title !== 'string') {
-      throw new Error("Invalid or missing 'title' field");
-    }
-
-    if (description && typeof description !== 'string') {
-      throw new Error("Invalid 'description' field");
-    }
-
-    if (typeof reward !== 'number' || reward < 0) {
-      throw new Error("Invalid 'reward' field: must be a non-negative number");
-    }
-
+    if (!title || typeof title !== 'string') throw new ValidationError("Invalid or missing 'title'");
+    if (description && typeof description !== 'string') throw new ValidationError("Invalid 'description'");
+    if (typeof reward !== 'number' || reward < 0) throw new ValidationError("Invalid 'reward'");
     return new CreateMissionDTO(missionData);
   }
 }
