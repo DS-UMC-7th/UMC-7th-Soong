@@ -4,7 +4,7 @@ export const handleUserSignUp = async (req, res) => {
   const userData = bodyToUser(req.body);
   
   try {
-    let userResponse;
+    let userResponse; 
 
     const existingUser = await prisma.user.findUnique({ where: { email: userData.email } });
     
