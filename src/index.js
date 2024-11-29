@@ -2,12 +2,20 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { handleUserSignUp } from "./controllers/user.controller.js";
+
+import { handleUserSignUp,  handleUpdateUser } from './controllers/user.controller.js';
 import { addStore, handleListStoreReviews } from "./controllers/store.controller.js";
 import { addReview } from "./controllers/review.controller.js";
 import { addMission, challengeMission } from "./controllers/mission.controller.js";
+import passport from "passport";
+import { googleStrategy, naverStrategy } from "./auth.config.js"; // NaverStrategy 추가
 
 dotenv.config();
+
+passport.use(googleStrategy);
+passport.use(naverStrategy); 
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
 const app = express();
 const port = process.env.PORT || 3001; 
@@ -17,6 +25,75 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use(
+  session({
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    },
+    resave: false,
+    saveUninitialized: false,
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    store: new PrismaSessionStore(prisma, {
+      checkPeriod: 2 * 60 * 1000, 
+      dbRecordIdIsSessionId: true,
+    }),
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req, res, next) => {
+  res.success = (success) => {
+    return res.json({ resultType: "SUCCESS", error: null, success });
+  };
+
+  res.error = ({ errorCode = "unknown", reason = null, data = null }) => {
+    return res.json({
+      resultType: "FAIL",
+      error: { errorCode, reason, data },
+      success: null,
+    });
+  };
+
+  next();
+});
+
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(err.statusCode || 500).error({
+    errorCode: err.errorCode || "unknown",
+    reason: err.reason || err.message || null,
+    data: err.data || null,
+  });
+});
+
+
+app.get("/oauth2/login/google", passport.authenticate("google"));
+app.get(
+  "/oauth2/callback/google",
+  passport.authenticate("google", {
+    failureRedirect: "/oauth2/login/google",
+    failureMessage: true,
+  }),
+  (req, res) => res.redirect("/")
+);
+
+app.get("/oauth2/login/naver", passport.authenticate("naver"));
+
+app.get(
+  "/oauth2/callback/naver",
+  passport.authenticate("naver", {
+    failureRedirect: "/oauth2/login/naver",
+    failureMessage: true,
+  }),
+  (req, res) => res.redirect("/") 
+);
+
 
 /**
  * @swagger
@@ -72,6 +149,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         description: "서버 에러"
  */
 app.post("/auth/signup", handleUserSignUp);
+
+app.put("/api/users/:userId/update", handleUpdateUser);
 
 /**
  * @swagger

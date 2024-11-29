@@ -1,7 +1,44 @@
 import { prisma } from "../db.config.js";
+import { DuplicateUserEmailError } from "../errors.js"; // 사용자 정의 오류 가져오기
+
+export const getUser = async (userId) => {
+  return await prisma.user.findUnique({
+    where: { id: userId },
+  });
+};
 
 export const addUser = async (data) => {
-  const existingUser = await prisma.user.findFirst({ where: { email: data.email } });
-  if (existingUser) return null;
-  return (await prisma.user.create({ data })).id;
+  const user = await prisma.user.findFirst({ where: { email: data.email } });
+  if (user) {
+    console.error("중복된 이메일:", data.email);
+    throw new DuplicateUserEmailError("이미 존재하는 이메일입니다.", data);
+  }
+
+  return await prisma.user.create({
+    data: {
+      email: data.email,
+      name: data.name,
+      gender: data.gender,
+      birthdate: data.birthdate,
+      address: data.address,
+      spec_address: data.spec_address,
+      phonenumber: data.phonenumber,
+    }
+  });
+};
+
+export const getUserPreferencesByUserId = async (userId) => {
+  return await prisma.userFavorCategory.findMany({
+    where: { user_id: userId },
+    include: { foodCategory: true },
+  });
+};
+
+export const setPreference = async (userId, categoryId) => {
+  return await prisma.userFavorCategory.create({
+    data: {
+      user_id: userId,
+      category_id: categoryId,
+    },
+  });
 };
